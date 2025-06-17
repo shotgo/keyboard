@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>키보드 테스트</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      text-align: center;
+      background: #fafafa;
+      color: #333;
+    }
+    button {
+      margin: 10px 8px;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #exitBtn {
+      display: none;
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 16px;
+      padding: 5px 15px;
+      background-color: #dc3545;
+    }
+    #exitBtn:hover {
+      background-color: #a71d2a;
+    }
+    #output {
+      margin-top: 30px;
+      font-size: 24px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 60px;
+    }
+    #keyboard {
+      margin-top: 20px;
+      display: none;
+      user-select: none;
+    }
+    .row {
+      margin-bottom: 8px;
+    }
+    .key {
+      display: inline-block;
+      margin: 3px;
+      padding: 10px 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background: #f0f0f0;
+      min-width: 40px;
+      font-weight: 600;
+      text-transform: uppercase;
+      transition: background-color 0.2s ease;
+    }
+    .key.pressed {
+      background-color: #87ceeb;
+      border-color: #1e90ff;
+      box-shadow: 0 0 5px #1e90ff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>키보드 테스트</h1>
+  <button id="simultaneousBtn">동시</button>
+  <button id="sequentialBtn">연속</button>
+  <button id="exitBtn">나가기</button>
+
+  <div id="output"></div>
+
+  <div id="keyboard" aria-label="가상 키보드">
+    <div class="row" role="row">
+      <span class="key" data-key="q" role="key">Q</span>
+      <span class="key" data-key="w" role="key">W</span>
+      <span class="key" data-key="e" role="key">E</span>
+      <span class="key" data-key="r" role="key">R</span>
+      <span class="key" data-key="t" role="key">T</span>
+      <span class="key" data-key="y" role="key">Y</span>
+      <span class="key" data-key="u" role="key">U</span>
+      <span class="key" data-key="i" role="key">I</span>
+      <span class="key" data-key="o" role="key">O</span>
+      <span class="key" data-key="p" role="key">P</span>
+    </div>
+    <div class="row" role="row">
+      <span class="key" data-key="a" role="key">A</span>
+      <span class="key" data-key="s" role="key">S</span>
+      <span class="key" data-key="d" role="key">D</span>
+      <span class="key" data-key="f" role="key">F</span>
+      <span class="key" data-key="g" role="key">G</span>
+      <span class="key" data-key="h" role="key">H</span>
+      <span class="key" data-key="j" role="key">J</span>
+      <span class="key" data-key="k" role="key">K</span>
+      <span class="key" data-key="l" role="key">L</span>
+    </div>
+    <div class="row" role="row">
+      <span class="key" data-key="z" role="key">Z</span>
+      <span class="key" data-key="x" role="key">X</span>
+      <span class="key" data-key="c" role="key">C</span>
+      <span class="key" data-key="v" role="key">V</span>
+      <span class="key" data-key="b" role="key">B</span>
+      <span class="key" data-key="n" role="key">N</span>
+      <span class="key" data-key="m" role="key">M</span>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const output = document.getElementById('output');
+      const keyboard = document.getElementById('keyboard');
+      const simultaneousBtn = document.getElementById('simultaneousBtn');
+      const sequentialBtn = document.getElementById('sequentialBtn');
+      const exitBtn = document.getElementById('exitBtn');
+
+      let mode = null;
+      let pressedKeys = new Set();
+      let sequentialCount = 0;
+      let typedText = '';
+
+      function reset() {
+        pressedKeys.clear();
+        clearKeyboardHighlight();
+        typedText = '';
+        sequentialCount = 0;
+      }
+
+      function clearKeyboardHighlight() {
+        document.querySelectorAll('.key').forEach(key => key.classList.remove('pressed'));
+      }
+
+      function updateKeyboardHighlight() {
+        document.querySelectorAll('.key').forEach(key => {
+          key.classList.toggle('pressed', pressedKeys.has(key.dataset.key));
+        });
+      }
+
+      function onKeyDown(e) {
+        if (mode === 'simultaneous') {
+          pressedKeys.add(e.key.toLowerCase());
+          updateKeyboardHighlight();
+          output.innerHTML = `<p>동시 입력된 키 (${pressedKeys.size}개)</p>`;
+        } else if (mode === 'sequential') {
+          sequentialCount++;
+          const key = e.key;
+
+          if (key === 'Backspace') {
+            typedText = typedText.slice(0, -1);
+          } else if (key === 'Enter') {
+            typedText += '\n';
+          } else if (key.length === 1) {
+            typedText += key;
+          }
+
+          if (typedText.toUpperCase().includes('SHOTGO')) {
+            window.open('https://op.gg/ko/valorant/profile/shotgo-%EC%83%B7%EA%B3%A0%EC%96%91', '_blank');
+            typedText = '';
+            sequentialCount = 0;
+          }
+
+          output.innerHTML = `<p>연속 모드: ${sequentialCount}회 입력</p><p>입력 기록:</p><pre id="typedArea">${typedText}</pre>`;
+        }
+      }
+
+      function onKeyUp(e) {
+        if (mode === 'simultaneous') {
+          pressedKeys.delete(e.key.toLowerCase());
+          updateKeyboardHighlight();
+          output.innerHTML = `<p>동시 입력된 키 (${pressedKeys.size}개)</p>`;
+        }
+      }
+
+      simultaneousBtn.addEventListener('click', () => {
+        mode = 'simultaneous';
+        reset();
+        keyboard.style.display = 'block';
+        exitBtn.style.display = 'none';
+        output.innerHTML = '<p>동시 모드: 키를 눌러보세요.</p>';
+
+        document.addEventListener('keydown', onKeyDown);
+        document.addEventListener('keyup', onKeyUp);
+      });
+
+      sequentialBtn.addEventListener('click', () => {
+        mode = 'sequential';
+        reset();
+        keyboard.style.display = 'none';
+        exitBtn.style.display = 'inline-block';
+        output.innerHTML = `<p>연속 모드: ${sequentialCount}회 입력</p><p>입력 기록:</p><pre id="typedArea"></pre>`;
+
+        document.addEventListener('keydown', onKeyDown);
+      });
+
+      exitBtn.addEventListener('click', () => {
+        mode = null;
+        reset();
+        keyboard.style.display = 'none';
+        exitBtn.style.display = 'none';
+        output.innerHTML = '';
+
+        document.removeEventListener('keydown', onKeyDown);
+        document.removeEventListener('keyup', onKeyUp);
+      });
+    })();
+  </script>
+
+</body>
+</html>
